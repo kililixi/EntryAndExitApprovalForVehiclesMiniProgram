@@ -34,22 +34,58 @@ export interface IMiniWxLoginRes {
  * 登录响应
  */
 export interface LoginResult {
-  access_token: string;
+  access_token: string
 }
 
 /**
  * 登录请求
  */
 export interface LoginData {
-  tenantId?: string;
-  username?: string;
-  password?: string;
-  rememberMe?: boolean;
-  socialCode?: string;
-  socialState?: string;
-  source?: string;
-  code?: string;
-  uuid?: string;
-  clientId: string;
-  grantType: string;
+  tenantId?: string
+  username?: string
+  password?: string
+  rememberMe?: boolean
+  socialCode?: string
+  socialState?: string
+  source?: string
+  code?: string
+  uuid?: string
+  clientId: string
+  grantType: string
+}
+
+/**
+ * 用户信息
+ */
+export interface UserInfo {
+  user: UserVO
+  roles: string[]
+  permissions: string[]
+}
+
+/**
+ * 用户返回对象
+ */
+export interface UserVO {
+  userId: string | number
+  unitId: number
+  deptId: number
+  userName: string
+  nickName: string
+  userType: string
+  email: string
+  phonenumber: string
+  sex: string
+  avatar: string
+  status: string
+  delFlag: string
+  loginIp: string
+  loginDate: string
+  remark: string
+  deptName: string
+  unitName: string
+  roleIds: any
+  postIds: any
+  roleId: any
+  admin: boolean
 }

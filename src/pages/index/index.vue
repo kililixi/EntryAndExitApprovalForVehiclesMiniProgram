@@ -7,7 +7,14 @@
         indicatorMode="dot"
         v-if="layout.type === 'banner'"
       ></up-swiper>
-
+		<wd-text
+		  text="芦叶满汀洲，寒沙带浅流。二十年重过南楼。柳下系船犹未稳，能几日，又中秋。黄鹤断矶头，故人曾到否？旧江山浑是新愁。欲买桂花同载酒，终不似，少年游。"
+		></wd-text>
+		<wd-text type="primary" text="主色"></wd-text>
+		<wd-text type="error" text="错误"></wd-text>
+		<wd-text type="success" text="成功"></wd-text>
+		<wd-text type="warning" text="警告"></wd-text>
+		<wd-text text="默认"></wd-text>
       <view class="mt-4" v-if="layout.type === 'card'">{{ layout.title }}</view>
     </view>
   </view>

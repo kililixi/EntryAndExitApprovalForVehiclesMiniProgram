@@ -11,7 +11,8 @@
     "custom": {
       "^u--(.*)": "uview-plus/components/u-$1/u-$1.vue",
 			"^up-(.*)": "uview-plus/components/u-$1/u-$1.vue",
-	    "^u-([^-].*)": "uview-plus/components/u-$1/u-$1.vue"
+	    "^u-([^-].*)": "uview-plus/components/u-$1/u-$1.vue",
+		"^wd-(.*)": "wot-design-uni/components/wd-$1/wd-$1.vue"
     }
   },
   "tabBar": {
@@ -30,18 +31,6 @@
         "selectedIconPath": "static/tabbar/home-select.png",
         "pagePath": "pages/index/index",
         "text": "首页"
-      },
-      {
-        "iconPath": "static/tabbar/tab1.png",
-        "selectedIconPath": "static/tabbar/tab1-select.png",
-        "pagePath": "pages/task/index",
-        "text": "tab1"
-      },
-      {
-        "iconPath": "static/tabbar/tab2.png",
-        "selectedIconPath": "static/tabbar/tab2-select.png",
-        "pagePath": "pages/waybill/index",
-        "text": "tab2"
       },
       {
         "iconPath": "static/tabbar/user.png",

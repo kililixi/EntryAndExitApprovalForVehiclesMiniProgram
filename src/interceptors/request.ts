@@ -5,7 +5,8 @@ import { platform } from "@/utils/platform"
 import { setAuthHeaders } from "@/utils/auth"
 export type CustomRequestOptions = UniApp.RequestOptions & {
   query?: Record<string, any>
-  hideErrorToast?: boolean
+  hideErrorToast?: boolean,
+  encrypt?: boolean
 } & IUniUploadFileOptions
 
 const baseUrl = import.meta.env.VITE_SERVER_BASEURL

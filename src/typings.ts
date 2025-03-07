@@ -1,7 +1,7 @@
 // 全局要用的类型放到这里
 
 type ApiResult<T> = {
-  success: boolean
+  code: number
   traceid: string
   code: string
   msg: string

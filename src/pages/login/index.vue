@@ -33,8 +33,12 @@ import { useUserStore } from '@/store/user';
 const userStore = useUserStore();
 
 const loginForm = ref({
+	tenantId: '000000',
 	username: '',
-	password: ''
+	password: '',
+	rememberMe: false,
+	code: '',
+	uuid: ''
 });
 
 const showPassword = ref(false);
@@ -58,9 +62,14 @@ const handleLogin = async () => {
 			title: '登录成功',
 			icon: 'none'
 		});
+		uni.switchTab({
+		    url: '/pages/home/index'
+		});
+		
+		
 	} else {
 		uni.showToast({
-			title: '失败',
+			title: '登陆失败',
 			icon: 'none'
 		});
 	}

@@ -1,9 +1,12 @@
 import { defineStore } from "pinia"
 import { to } from 'await-to-js';
 import { ref } from "vue"
-import { loginByWechatApi, login as loginApi } from "@/api/login"
+import { loginByWechatApi, login as loginApi, getInfo as getUserInfo } from "@/api/login"
 import { LoginData } from "@/pages/login/types"
 const initState = {}
+import defAva from '@/assets/images/profile.jpg';
+// const defAva = import.meta.glob(`../../assets/image/workbench/*.png`, { eager: true })
+import { getToken, removeToken, setToken } from '@/utils/auth';
 
 export const useUserStore = defineStore(
   "user",
@@ -11,6 +14,18 @@ export const useUserStore = defineStore(
 	const token = ref('');
     const userInfo = ref<IUserInfo>({ ...initState })
     const appid = "XXXXX" // 你的appid
+	
+	const name = ref('');
+  const nickname = ref('');
+  const unitId = ref<string | number>('');
+  const deptId = ref<string | number>('');
+  const userId = ref<string | number>('');
+  const unitName = ref<string>('');
+  const deptName = ref<string>('');
+  const avatar = ref('');
+  const roles = ref<Array<string>>([]); // 用户角色编码集合 → 判断路由权限
+  const permissions = ref<Array<string>>([]); // 用户权限编码集合 → 判断按钮权限
+	
     const setUserInfo = (val: IUserInfo) => {
       userInfo.value = val
     }
@@ -55,15 +70,46 @@ export const useUserStore = defineStore(
 	*/
 	const login = async (userInfo: LoginData): Promise<void> => {
 		const [err, res] = await to(loginApi(userInfo));
+		console.log('err', err, res)
 		if (res) {
 		  const data = res.data;
 		  console.log(data)
-		  // setToken(data.access_token);
+		  setToken(data.access_token);
 		  token.value = data.access_token;
+		  
 		  return Promise.resolve();
 		}
 		return Promise.reject(err);
 	};
+	
+	// 获取用户信息
+	const getInfo = async (): Promise<void> => {
+	    const [err, res] = await to(getUserInfo());
+	    if (res) {
+	      const data = res.data;
+	      const user = data.user;
+	      const profile = user.avatar == '' || user.avatar == null ? defAva : user.avatar;
+	
+	      if (data.roles && data.roles.length > 0) {
+	        // 验证返回的roles是否是一个非空数组
+	        roles.value = data.roles;
+	        permissions.value = data.permissions;
+	      } else {
+	        roles.value = ['ROLE_DEFAULT'];
+	      }
+	      name.value = user.userName;
+	      nickname.value = user.nickName;
+	      avatar.value = profile;
+	      userId.value = user.userId;
+	      unitId.value = user.unitId;
+	      deptId.value = user.deptId;
+	      unitName.value = user.unitName
+	      deptName.value = user.deptName;
+	      return Promise.resolve();
+	    }
+	    return Promise.reject(err);
+	  };
+
 	
     return {
       userInfo,
@@ -73,7 +119,8 @@ export const useUserStore = defineStore(
       reset,
       appid,
       loginByWechat,
-	  login
+	  login,
+	  getInfo
     }
   },
   {

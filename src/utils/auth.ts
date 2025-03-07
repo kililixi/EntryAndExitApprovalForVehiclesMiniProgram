@@ -18,3 +18,12 @@ export const setAuthHeaders = () => {
   ]
   return buildRequestHeaders(configHeaders)
 }
+
+const TokenKey = 'Admin-Token';
+
+export const getToken = () => uni.getStorageSync(TokenKey);
+
+export const setToken = (access_token: string) => (uni.setStorageSync(TokenKey, access_token));
+
+export const removeToken = () => (uni.removeStorageSync(TokenKey));
+

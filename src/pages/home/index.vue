@@ -10,11 +10,20 @@
 
 <script lang="ts" setup>
 import CommonPageLayout from "@/layouts/CommonPageLayout/index.vue"
+import { useUserStore } from '@/store/user';
+
+const userStore = useUserStore();
+
 const toOrderDetail = () => {
   uni.navigateTo({
     url: "/pages-sub/orderDetail/index",
   })
 }
+
+onMounted( async ()=>{
+	const data = userStore.getInfo();
+	console.log('user', data)
+})
 </script>
 
 <style lang="scss" scoped></style>

@@ -87,9 +87,17 @@ const toOrderDetail = () => {
 }
 
 const toAddApplication = () => {
-  uni.navigateTo({
-    url: "/pages-sub/application/index",
-  })
+  
+  if( userStore.userType === "tourist" ) {
+	  uni.navigateTo({
+	    url: "/pages-sub/application/index",
+	  })
+  } else if(userStore.userType === "legal_person") {
+	  uni.navigateTo({
+	    url: "/pages-sub/application-company/index",
+	  })
+  }
+  
 }
 
 const switchToMyApplication = () => {

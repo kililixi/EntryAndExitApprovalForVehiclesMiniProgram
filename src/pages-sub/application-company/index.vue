@@ -3,24 +3,33 @@
     <wd-message-box />
     <wd-toast />
     <wd-form :model="formData" :rules="rules" ref="formRef">
-      <!-- 基本信息 -->
-      <wd-cell-group custom-class="group" title="基本信息" border>
+      <!-- 公司信息 -->
+      <wd-cell-group custom-class="group" title="公司信息" border>
         <wd-input
-          label="姓名"
+          label="公司名称"
           label-width="100px"
-          v-model="formData.individualName"
-          placeholder="请输入姓名"
+          v-model="formData.companyName"
+          placeholder="请输入公司名称"
           clearable
-          prop="name"
+          prop="companyName"
           required
         />
         <wd-input
-          label="身份证号码"
+          label="营业执照号"
           label-width="100px"
-          v-model="formData.individualIdno"
-          placeholder="请输入身份证号码"
+          v-model="formData.busiLicence"
+          placeholder="请输入营业执照号"
           clearable
-          prop="idCard"
+          prop="busiLicence"
+          required
+        />
+        <wd-input
+          label="法人身份证号"
+          label-width="100px"
+          v-model="formData.legalPersonIdno"
+          placeholder="请输入法人身份证号码"
+          clearable
+          prop="legalPersonIdno"
           required
         />
         <wd-input
@@ -32,66 +41,69 @@
           prop="contactPhone"
           required
         />
-      </wd-cell-group>
-
-      <!-- 身份证照片 -->
-      <wd-cell-group title="身份证照片" border>
-        <wd-cell title="身份证正面" title-width="100px" prop="idCardFront" required>
+        <wd-cell title="营业执照" title-width="100px" prop="businessLicense" required>
           <view style="text-align: left">
             <wd-upload
-			  :limit="1"
-			  :headers="tempHeader"
-              v-model:file-list="idCardFrontList"
+              :limit="1"
+              :headers="tempHeader"
+              v-model:file-list="businessLicenseList"
               image-mode="aspectFill"
               :action="uploadAction"
-			   @success="handleUploadSuccess"
+              @success="handleUploadSuccess"
             ></wd-upload>
           </view>
-        </wd-cell>
-        <wd-cell title="身份证反面" title-width="100px" prop="idCardBack" required>
-          <wd-upload
-		    :limit="1"
-            v-model:file-list="idCardBackList"
-            image-mode="aspectFill"
-            :action="uploadAction"
-			 @success="handleUploadSuccess"
-          ></wd-upload>
         </wd-cell>
       </wd-cell-group>
 
       <!-- 车辆信息 -->
-      <wd-cell-group custom-class="group" title="车辆信息" border>
-        <wd-picker
-          :columns="provinces"
-          label="省份"
-          v-model="selectProvince"
-          @confirm="handleProvinceConfirm"
-        />
-        <wd-input
-          label="车牌号"
-          label-width="100px"
-          v-model="formData.plateNumber"
-          placeholder="请输入燃油车车牌号"
-          clearable
-          prop="plateNumber"
-          required
-        >
-          <!-- <template #prefix>
-				<wd-text type="primary" :text="selectProvince"></wd-text>
-			</template> -->
-        </wd-input>
-        <view class="text-xs text-gray-500 ml-24">注：仅限燃油车</view>
-        <wd-cell title="行驶证照片" title-width="100px" prop="drivingLicense" required>
-          <view style="text-align: left">
-            <wd-upload
-			  :limit="1"
-              v-model:file-list="fileList"
-              image-mode="aspectFill"
-              :action="uploadAction"
-			  @success="handleUploadSuccess"
-            ></wd-upload>
+      <wd-cell-group custom-class="group" :use-slot="true" title="车辆信息" border>
+        <template #value>
+          <wd-button size="small" type="primary" @click="addVehicle">添加车辆</wd-button>
+        </template>
+        <view v-for="(vehicle, index) in vehicles" :key="index" class="vehicle-item">
+          <wd-picker
+            :columns="provinces"
+            label="省份"
+            v-model="vehicle.province"
+            @confirm="(e) => handleProvinceConfirm(e, index)"
+          />
+          <wd-input
+            label="车牌号"
+            label-width="100px"
+            v-model="vehicle.plateNumber"
+            placeholder="请输入燃油车车牌号"
+            clearable
+            :prop="'vehicles.' + index + '.plateNumber'"
+            required
+          ></wd-input>
+          <wd-cell
+            title="行驶证照片"
+            title-width="100px"
+            :prop="'vehicles.' + index + '.drivingLicense'"
+            required
+          >
+            <view style="text-align: left">
+              <wd-upload
+                :limit="1"
+                v-model:file-list="vehicle.drivingLicenseList"
+                image-mode="aspectFill"
+                :action="uploadAction"
+                @success="(file, fileList) => handleUploadSuccess(file, fileList, index)"
+              ></wd-upload>
+            </view>
+          </wd-cell>
+          <view class="">
+            <wd-button
+              size="small"
+              type="icon"
+              icon="delete"
+              @click="removeVehicle(index)"
+              v-if="vehicles.length > 1"
+            ></wd-button>
           </view>
-        </wd-cell>
+          <view class="vehicle-divider" v-if="index !== vehicles.length - 1"></view>
+        </view>
+        <!-- <view class="text-xs text-gray-500 ml-24">注：仅限燃油车</view> -->
       </wd-cell-group>
 
       <!-- 申请信息 -->
@@ -126,8 +138,15 @@
 
       <!-- 附件上传 -->
       <!--  <wd-cell-group custom-class="group" title="相关附件" border>
-        <wd-cell title="附件" title-width="100px" prop="attachments">
+        <wd-cell title="附件" title-width="100px">
           <view style="text-align: left">
+            <wd-upload
+              multiple
+              :limit="5"
+              v-model:file-list="attachmentsList"
+              :action="uploadAction"
+              @success="handleAttachmentSuccess"
+            ></wd-upload>
           </view>
         </wd-cell>
       </wd-cell-group> -->
@@ -142,15 +161,15 @@
 
 <script lang="ts" setup>
 import { reactive, ref, computed } from "vue"
-import { application } from "@/api/application/index"
+import { application } from "@/api/application-company/index"
 import { startWorkFlow, completeTask } from "@/api/workflow/index"
 import provincesData from "./provinces.json"
 import pageConfig from "@/config/style.config"
 import dayjs from "dayjs"
-import { IVehicleApprovalForm } from "./types"
+import { IVehicleApprovalForm, VehicleForm } from "./types"
 import { StartProcessBo } from "@/api/types"
 import { useToast, useMessage } from "wot-design-uni"
-import { globalHeaders } from '@/utils/request'
+import { globalHeaders } from "@/utils/request"
 
 const messageBox = useMessage()
 const toast = useToast()
@@ -158,47 +177,50 @@ const toast = useToast()
 // 表单引用
 const formRef = ref()
 
-// 上传地址（实际项目中需要替换为真实的上传地址）
-
+// 上传地址
 const baseUrl = import.meta.env.VITE_SERVER_BASEURL
-const uploadAction = ref(baseUrl + '/resource/oss/upload');
+const uploadAction = ref(baseUrl + "/resource/oss/upload")
 
-const fileList = ref<any[]>([])
-const idCardFrontList = ref<any[]>([])
-const idCardBackList = ref<any[]>([])
+// 文件列表
+const businessLicenseList = ref<any[]>([])
+const attachmentsList = ref<any[]>([])
+const vehicles = ref<any[]>([])
 
 const provinces = ref(provincesData.provinces)
-const selectProvince = ref("京")
 
-const headers = ref(globalHeaders());
-console.log('headers', headers)
+const headers = ref(globalHeaders())
 const tempHeader = {
-	"token": headers.value.Authorization,
-	"clientid": headers.value.clientid,
-	"aaa": "aaaa"
+  token: headers.value.Authorization,
+  clientid: headers.value.clientid,
 }
 
 // 日期限制
 const minDate = ref(new Date())
 const maxDate = computed(() => {
   const date = new Date()
-  date.setDate(date.getDate() + 30) // 最多可以选择30天后的日期
+  date.setDate(date.getDate() + 30)
   return date
 })
 
+vehicles.value = [
+   {
+     province: "京",
+     plateNumber: "",
+     drivingLicense: "",
+     drivingLicenseList: [],
+   },
+ ]
+
 // 表单数据
 const formData = reactive<IVehicleApprovalForm>({
-  individualName: "",
-  individualIdno: "",
+  companyName: "",
+  busiLicence: "",
+  legalPersonIdno: "",
   contactPhone: "",
-  idCardFront: "",
-  idCardBack: "",
-  plateNumber: "",
-  drivingLicense: "",
   startTime: "",
   endTime: "",
   applicationReason: "",
-  // attachments: [],
+  vehicles: []
 })
 
 const submitFormData = ref<StartProcessBo>({
@@ -207,26 +229,24 @@ const submitFormData = ref<StartProcessBo>({
   variables: {},
 })
 
-const dateRange = ref<number[]>([])
-
 // 表单验证规则
 const rules = reactive({
-  name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
-  idCard_1: [
-    { required: true, message: "请输入身份证号码", trigger: "blur" },
+  companyName: [{ required: true, message: "请输入公司名称", trigger: "blur" }],
+  busiLicence: [{ required: true, message: "请输入营业执照号", trigger: "blur" }],
+  legalPersonIdno_1: [
+    { required: true, message: "请输入法人身份证号码", trigger: "blur" },
     {
       pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/,
       message: "请输入正确的身份证号码",
       trigger: "blur",
     },
   ],
-  phone_1: [
+  contactPhone: [
     { required: true, message: "请输入手机号码", trigger: "blur" },
     { pattern: /^1[3-9]\d{9}$/, message: "请输入正确的手机号码", trigger: "blur" },
   ],
-  idCardFront_1: [{ required: true, message: "请上传身份证正面照片", trigger: "change" }],
-  idCardBack_1: [{ required: true, message: "请上传身份证反面照片", trigger: "change" }],
-  plateNumber_1: [
+  businessLicense_1: [{ required: true, message: "请上传营业执照照片", trigger: "change" }],
+  "vehicles.*.plateNumber": [
     { required: true, message: "请输入车牌号", trigger: "blur" },
     {
       pattern:
@@ -235,58 +255,44 @@ const rules = reactive({
       trigger: "blur",
     },
   ],
-  drivingLicense_1: [{ required: true, message: "请上传行驶证照片", trigger: "change" }],
+  "vehicles.*.drivingLicense": [{ required: true, message: "请上传行驶证照片", trigger: "change" }],
   startTime: [{ required: true, message: "请选择进岛时间", trigger: "change" }],
   endTime: [{ required: true, message: "请选择离岛时间", trigger: "change" }],
   applicationReason: [{ required: true, message: "请输入申请事由", trigger: "blur" }],
 })
 
-// 上传前验证
-const beforeUpload = (file: File) => {
-  // 验证文件类型和大小
-  const isImage = file.type.indexOf("image") !== -1
-  const isPDF = file.type === "application/pdf"
-  const isLt5M = file.size / 1024 / 1024 < 5
+// 添加车辆
+const addVehicle = () => {
+  vehicles.value.push({
+    province: "京",
+    plateNumber: "",
+    drivingLicenseImg: "",
+    drivingLicenseList: [],
+  })
+}
 
-  if (!isImage && !isPDF) {
-    toast.warning("只能上传图片")
-    // uni.showToast({
-    //   title: "只能上传图片或PDF文件",
-    //   icon: "none",
-    // })
-    return false
-  }
-
-  if (!isLt5M) {
-    toast.warning("文件大小不能超过5MB")
-    // uni.showToast({
-    //   title: "文件大小不能超过5MB",
-    //   icon: "none",
-    // })
-    return false
-  }
-
-  return true
+// 删除车辆
+const removeVehicle = (index: number) => {
+  vehicles.value.splice(index, 1)
 }
 
 // 上传成功回调
-const handleUploadSuccess = (file: any, fileList: any[], formData: any) => {
-  console.log("上传成功", file, fileList, formData)
+const handleUploadSuccess = (file: any, fileList: any[], index?: number) => {
+  console.log("上传成功", file, fileList)
+  if (index !== undefined) {
+    vehicles.value[index].drivingLicense = file.url
+  }
 }
 
-const handleConfirm2 = ({ value }) => {
-  console.log(value)
-}
+// 附件上传成功回调
+const handleAttachmentSuccess = (file: any) => {}
 
 // 日期确认回调
 const handleConfirm = ({ value }) => {
-  console.log(value)
-  // 当两个时间都已选择时，进行时间差验证
   if (formData.startTime && formData.endTime) {
     const startDate = dayjs(formData.startTime)
     const endDate = dayjs(formData.endTime)
     const diffDays = endDate.diff(startDate, "day")
-    console.log("时间差(天):", diffDays)
 
     if (diffDays > 7) {
       toast.warning("申请时间不能超过7天")
@@ -298,24 +304,25 @@ const handleConfirm = ({ value }) => {
   }
 }
 
-function handleProvinceConfirm({ value }) {
-  selectProvince.value = value
-  // 更新车牌号验证规则
-  rules.plateNumber_1[1].pattern = new RegExp(`^[${value}][A-Z][A-Z0-9]{5}$`)
+// 省份选择确认回调
+function handleProvinceConfirm({ value }, index: number) {
+  const vehicle = vehicles.value[index]
+  vehicle.province = value
 
-  // 根据车牌号输入状态更新车牌号
-  if (!formData.plateNumber) {
-    // 如果车牌号为空，直接设置为选择的省份
-    formData.plateNumber = value
+  // 更新车牌号验证规则
+  // rules["vehicles." + index + ".plateNumber"][1].pattern = new RegExp(
+  //   `^[${value}][A-Z][A-Z0-9]{5}$`,
+  // )
+
+  // 更新车牌号
+  if (!vehicle.plateNumber) {
+    vehicle.plateNumber = value
   } else {
-    // 判断第一个字符是否为省份简称
-    const firstChar = formData.plateNumber.charAt(0)
+    const firstChar = vehicle.plateNumber.charAt(0)
     if (/[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领]/.test(firstChar)) {
-      // 如果是省份简称，替换为新选择的省份
-      formData.plateNumber = value + formData.plateNumber.slice(1)
+      vehicle.plateNumber = value + vehicle.plateNumber.slice(1)
     } else {
-      // 如果不是省份简称，在前面添加省份
-      formData.plateNumber = value + formData.plateNumber
+      vehicle.plateNumber = value + vehicle.plateNumber
     }
   }
 }
@@ -340,47 +347,43 @@ const submitForm = () => {
       } else if (!formData.startTime || !formData.endTime) {
         toast.warning("请选择进岛和离岛时间")
         return
+      } else if (formData.vehicles.length === 0) {
+        toast.warning("车辆信息不能为空")
+        return
       }
-
-      // 提交表单数据
-      console.log("提交的表单数据", formData)
 
       messageBox
         .confirm({
           msg: "是否提交申请",
-          title: "提示",
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
         })
         .then(() => {
-          uni.showLoading({ title: "提交中..." })
-          application(formData)
-            .then((app) => {
-              console.log(app)
-              submitFormData.value.flowCode = "island_vehicle_application"
-              submitFormData.value.businessId = app.data.applicationId
-              //流程变量
-              // taskVariables.value = {
-              //   leaveDays: data.leaveDays,
-              //   userList: ['1', '3', '4']
-              // };
-              // submitFormData.value.variables = taskVariables.value;
-              startWorkFlow(submitFormData.value)
-                .then((resp) => {
-                  console.log("resp", resp)
-                  completeTask({
-                    taskId: resp.data.taskId,
-                    messageType: ["1"],
-                  }).then((taskRet) => {
-                    console.log("taskRet", taskRet)
-                    // uni.hideLoading()
-                    toast.success("提交成功")
-                  })
-                })
-                .catch((err) => {
-                  // uni.hideLoading()
-                  toast.error("提交失败，请重试")
-                })
-            })
-            .catch((err) => {
+			 uni.showLoading({ title: "提交中..." })
+			formData.vehicles = vehicles.value
+			
+          // 提交申请
+          application(formData).then((app: any) => {
+			  console.log(app)
+			  submitFormData.value.flowCode = "island_vehicle_application"
+			  submitFormData.value.businessId = app.data.applicationId
+			  
+			  startWorkFlow(submitFormData.value)
+			    .then((resp: any) => {
+			      console.log("resp", resp)
+			      completeTask({
+			        taskId: resp.data.taskId,
+			        messageType: ["1"],
+			      }).then(() => {
+			        // uni.hideLoading()
+			        toast.success("提交成功")
+			      })
+			    })
+			    .catch((err: Error) => {
+			      // uni.hideLoading()
+			      toast.error("提交失败，请重试")
+			    })
+          }).catch((err: Error) => {
               toast.error("提交失败，请重试")
               uni.hideLoading()
             })
@@ -389,11 +392,11 @@ const submitForm = () => {
             })
         })
         .catch(() => {
-          toast.show("取消提交操作")
+          // 用户取消提交
+		   toast.show("取消提交操作")
         })
     } else {
-      console.log("表单验证失败")
-      return false
+      console.log("表单验证失败", errors)
     }
   })
 }
@@ -401,32 +404,48 @@ const submitForm = () => {
 
 <style lang="scss" scoped>
 .page-container {
+  padding: 20px;
   background-color: #f5f5f5;
-  min-height: 100vh;
-  padding-bottom: 20px;
 }
 
-.inline-txt {
-  display: inline-block;
-  font-size: 14px;
-  margin: 0 8px;
-  color: rgba(0, 0, 0, 0.45);
-  vertical-align: middle;
+.group {
+  margin-bottom: 20px;
 }
-:deep(.group) {
-  margin-top: 12px;
+
+.vehicle-item {
+  position: relative;
+  padding: 0 8px;
+  background-color: #fff;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
 }
-.tip {
-  margin: 10px 15px 21px;
-  color: #999;
-  font-size: 12px;
+
+.vehicle-actions {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
 }
+
+.add-vehicle {
+  padding: 8px;
+  text-align: center;
+}
+
 .footer {
-  margin-top: 15px;
-  padding: 0 25px 21px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 20px;
+  background-color: #fff;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
-:deep(.label-class) {
-  color: #999 !important;
-  font-size: 12px !important;
+
+.vehicle-divider {
+  height: 1px;
+  background-color: #ebedf0;
+  margin: 4px 0;
 }
 </style>

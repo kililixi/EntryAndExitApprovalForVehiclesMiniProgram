@@ -17,19 +17,21 @@ export interface IVehicleApprovalForm {
   /** 联系方式 */
   contactPhone: string
   /** 身份证正面照片 */
-  idCardFront: ''
+  idCardFront?: ''
   /** 身份证反面照片 */
-  idCardBack: ''
+  idCardBack?: ''
   /** 车牌号 */
-  plateNumber: string
+  plateNumber?: string
   /** 行驶证照片 */
-  drivingLicense: ''
+  drivingLicense?: ''
   /** 进岛时间 */
   startTime: string
   /** 离岛时间 */
   endTime: string
   /** 申请事由 */
   applicationReason: string
+  
+  vehicles?: VehicleForm[]
   /** 附件 */
   // attachments: IUploadFile[]
 }
@@ -179,6 +181,41 @@ export interface VehicleVO {
   vehicleImg: string;
 }
 
+
+export interface VehicleForm {
+
+  /**
+   * 车牌号码
+   */
+  plateNumber?: string;
+
+  /**
+   * 车辆类型（如：轿车、SUV、货车等）
+   */
+  vehicleType?: string;
+
+  /**
+   * 品牌（如：大众、丰田等）
+   */
+  brand?: string;
+
+  /**
+   * 型号
+   */
+  model?: string;
+
+  /**
+   * 颜色
+   */
+  color?: string;
+
+  /**
+   * 车辆照片路径
+   */
+  vehicleImg?: string;
+  
+  drivingLicenseImg?: string;
+}
 
 export interface VehicleQuery {
   /**

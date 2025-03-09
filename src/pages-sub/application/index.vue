@@ -323,6 +323,7 @@ function handleProvinceConfirm({ value }) {
 // 提交表单
 const submitForm = () => {
   formRef.value.validate().then(({ valid, errors }) => {
+	console.log('error', errors)
     if (valid) {
       // 验证日期范围
       if (formData.startTime && formData.endTime) {
@@ -364,23 +365,22 @@ const submitForm = () => {
               // };
               // submitFormData.value.variables = taskVariables.value;
               startWorkFlow(submitFormData.value)
-                .then((resp) => {
+                .then((resp: any) => {
                   console.log("resp", resp)
                   completeTask({
                     taskId: resp.data.taskId,
                     messageType: ["1"],
-                  }).then((taskRet) => {
-                    console.log("taskRet", taskRet)
+                  }).then(() => {
                     // uni.hideLoading()
                     toast.success("提交成功")
                   })
                 })
-                .catch((err) => {
+                .catch((err: Error) => {
                   // uni.hideLoading()
                   toast.error("提交失败，请重试")
                 })
             })
-            .catch((err) => {
+            .catch((err: Error) => {
               toast.error("提交失败，请重试")
               uni.hideLoading()
             })

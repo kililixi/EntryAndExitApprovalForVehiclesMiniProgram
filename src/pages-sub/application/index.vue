@@ -11,7 +11,7 @@
           v-model="formData.individualName"
           placeholder="请输入姓名"
           clearable
-          prop="name"
+          prop="individualName"
           required
         />
         <wd-input
@@ -20,7 +20,7 @@
           v-model="formData.individualIdno"
           placeholder="请输入身份证号码"
           clearable
-          prop="idCard"
+          prop="individualIdno"
           required
         />
         <wd-input
@@ -40,11 +40,11 @@
           <view style="text-align: left">
             <wd-upload
 			  :limit="1"
-			  :headers="tempHeader"
               v-model:file-list="idCardFrontList"
               image-mode="aspectFill"
               :action="uploadAction"
-			   @success="handleUploadSuccess"
+			  :upload-method="customUpload"
+			   @success="handleUploadIdCardFrontSuccess"
             ></wd-upload>
           </view>
         </wd-cell>
@@ -54,7 +54,8 @@
             v-model:file-list="idCardBackList"
             image-mode="aspectFill"
             :action="uploadAction"
-			 @success="handleUploadSuccess"
+			:upload-method="customUpload"
+			 @success="handleUploadIdCardBackSuccess"
           ></wd-upload>
         </wd-cell>
       </wd-cell-group>
@@ -81,14 +82,15 @@
 			</template> -->
         </wd-input>
         <view class="text-xs text-gray-500 ml-24">注：仅限燃油车</view>
-        <wd-cell title="行驶证照片" title-width="100px" prop="drivingLicense" required>
+        <wd-cell title="行驶证照片" title-width="100px" prop="drivingLicenseImg" required>
           <view style="text-align: left">
             <wd-upload
 			  :limit="1"
               v-model:file-list="fileList"
               image-mode="aspectFill"
               :action="uploadAction"
-			  @success="handleUploadSuccess"
+			  :upload-method="customUpload"
+			  @success="handleUploadDrivingLicenceSuccess"
             ></wd-upload>
           </view>
         </wd-cell>
@@ -150,6 +152,7 @@ import dayjs from "dayjs"
 import { IVehicleApprovalForm } from "./types"
 import { StartProcessBo } from "@/api/types"
 import { useToast, useMessage } from "wot-design-uni"
+import type { UploadMethod, UploadFile } from 'wot-design-uni/components/wd-upload/types'
 import { globalHeaders } from '@/utils/request'
 
 const messageBox = useMessage()
@@ -173,9 +176,8 @@ const selectProvince = ref("京")
 const headers = ref(globalHeaders());
 console.log('headers', headers)
 const tempHeader = {
-	"token": headers.value.Authorization,
-	"clientid": headers.value.clientid,
-	"aaa": "aaaa"
+	"Authorization": headers.value.Authorization,
+	"clientid": headers.value.clientid
 }
 
 // 日期限制
@@ -193,8 +195,8 @@ const formData = reactive<IVehicleApprovalForm>({
   contactPhone: "",
   idCardFront: "",
   idCardBack: "",
-  plateNumber: "",
-  drivingLicense: "",
+  plateNumber: "京",
+  drivingLicenseImg: "",
   startTime: "",
   endTime: "",
   applicationReason: "",
@@ -211,8 +213,8 @@ const dateRange = ref<number[]>([])
 
 // 表单验证规则
 const rules = reactive({
-  name: [{ required: true, message: "请输入姓名", trigger: "blur" }],
-  idCard_1: [
+  individualName: [{ required: true, message: "请输入姓名", trigger: "blur" }],
+  individualIdno: [
     { required: true, message: "请输入身份证号码", trigger: "blur" },
     {
       pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/,
@@ -220,13 +222,13 @@ const rules = reactive({
       trigger: "blur",
     },
   ],
-  phone_1: [
+  contactPhone: [
     { required: true, message: "请输入手机号码", trigger: "blur" },
     { pattern: /^1[3-9]\d{9}$/, message: "请输入正确的手机号码", trigger: "blur" },
   ],
-  idCardFront_1: [{ required: true, message: "请上传身份证正面照片", trigger: "change" }],
-  idCardBack_1: [{ required: true, message: "请上传身份证反面照片", trigger: "change" }],
-  plateNumber_1: [
+  idCardFront: [{ required: true, message: "请上传身份证正面照片", trigger: "change" }],
+  idCardBack: [{ required: true, message: "请上传身份证反面照片", trigger: "change" }],
+  plateNumber: [
     { required: true, message: "请输入车牌号", trigger: "blur" },
     {
       pattern:
@@ -235,7 +237,7 @@ const rules = reactive({
       trigger: "blur",
     },
   ],
-  drivingLicense_1: [{ required: true, message: "请上传行驶证照片", trigger: "change" }],
+  drivingLicenseImg: [{ required: true, message: "请上传行驶证照片", trigger: "change" }],
   startTime: [{ required: true, message: "请选择进岛时间", trigger: "change" }],
   endTime: [{ required: true, message: "请选择离岛时间", trigger: "change" }],
   applicationReason: [{ required: true, message: "请输入申请事由", trigger: "blur" }],
@@ -269,13 +271,48 @@ const beforeUpload = (file: File) => {
   return true
 }
 
-// 上传成功回调
-const handleUploadSuccess = (file: any, fileList: any[], formData: any) => {
-  console.log("上传成功", file, fileList, formData)
+const customUpload: UploadMethod = (file, formData, options) => {
+	console.log('custom-upload')
+	const uploadTask = uni.uploadFile({
+    url: uploadAction.value,
+    header: tempHeader,
+    name: options.name,
+    fileName: options.name,
+    fileType: options.fileType,
+    formData,
+    filePath: file.url,
+    success(res) {
+      if (res.statusCode === options.statusCode) {
+        // 设置上传成功
+        options.onSuccess(res, file, formData)
+      } else {
+        // 设置上传失败
+        options.onError({ ...res, errMsg: res.errMsg || '' }, file, formData)
+      }
+    },
+    fail(err) {
+      // 设置上传失败
+      options.onError(err, file, formData)
+    }
+  })
+  // 设置当前文件加载的百分比
+    uploadTask.onProgressUpdate((res) => {
+      options.onProgress(res, file)
+    })
 }
 
-const handleConfirm2 = ({ value }) => {
-  console.log(value)
+// 上传成功回调
+const handleUploadIdCardFrontSuccess = ( { file, fileList }) => {
+  const ret = JSON.parse(file.response)
+  formData.idCardFront = ret.data.ossId
+}
+const handleUploadIdCardBackSuccess = ( { file, fileList }) => {
+  const ret = JSON.parse(file.response)
+  formData.idCardBack = ret.data.ossId
+}
+const handleUploadDrivingLicenceSuccess = ( { file, fileList }) => {
+  const ret = JSON.parse(file.response)
+  formData.drivingLicenseImg = ret.data.ossId
 }
 
 // 日期确认回调
@@ -373,6 +410,9 @@ const submitForm = () => {
                   }).then(() => {
                     // uni.hideLoading()
                     toast.success("提交成功")
+					uni.redirectTo({
+						url: '/pages-sub/application/detail?id=' + app.data.applicationId
+					})
                   })
                 })
                 .catch((err: Error) => {
@@ -393,7 +433,9 @@ const submitForm = () => {
         })
     } else {
       console.log("表单验证失败")
-      return false
+	  if(errors && errors.length > 0) {
+		   toast.warning(errors[0].message)
+	  }
     }
   })
 }

@@ -140,6 +140,14 @@
 		    "navigationBarTitleText": "申请详情",
 		    "navigationStyle": "default"
 		  }
+		},
+		{
+		  "path": "application-company/detail",
+		  "type": "page",
+		  "style": {
+		    "navigationBarTitleText": "申请详情",
+		    "navigationStyle": "default"
+		  }
 		}
       ]
     }

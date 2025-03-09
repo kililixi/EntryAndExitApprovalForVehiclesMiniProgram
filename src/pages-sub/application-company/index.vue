@@ -23,6 +23,15 @@
           prop="busiLicence"
           required
         />
+		<wd-input
+		  label="法人姓名"
+		  label-width="100px"
+		  v-model="formData.legalPersonName"
+		  placeholder="请输入法人姓名"
+		  clearable
+		  prop="legalPersonName"
+		  required
+		/>
         <wd-input
           label="法人身份证号"
           label-width="100px"
@@ -41,15 +50,15 @@
           prop="contactPhone"
           required
         />
-        <wd-cell title="营业执照" title-width="100px" prop="businessLicense" required>
+        <wd-cell title="营业执照" title-width="100px" prop="businessLicenseImg" required>
           <view style="text-align: left">
             <wd-upload
               :limit="1"
-              :headers="tempHeader"
               v-model:file-list="businessLicenseList"
               image-mode="aspectFill"
               :action="uploadAction"
-              @success="handleUploadSuccess"
+			  :upload-method="customUpload"
+			  @success="(file) => handleBusiLicenseUploadSuccess(file)"
             ></wd-upload>
           </view>
         </wd-cell>
@@ -88,7 +97,7 @@
                 v-model:file-list="vehicle.drivingLicenseList"
                 image-mode="aspectFill"
                 :action="uploadAction"
-                @success="(file, fileList) => handleUploadSuccess(file, fileList, index)"
+                @success="(file) => handleDrivingLicenseUploadSuccess(file, index)"
               ></wd-upload>
             </view>
           </wd-cell>
@@ -169,6 +178,7 @@ import dayjs from "dayjs"
 import { IVehicleApprovalForm, VehicleForm } from "./types"
 import { StartProcessBo } from "@/api/types"
 import { useToast, useMessage } from "wot-design-uni"
+import type { UploadMethod, UploadFile } from 'wot-design-uni/components/wd-upload/types'
 import { globalHeaders } from "@/utils/request"
 
 const messageBox = useMessage()
@@ -205,7 +215,7 @@ const maxDate = computed(() => {
 vehicles.value = [
    {
      province: "京",
-     plateNumber: "",
+     plateNumber: "京",
      drivingLicense: "",
      drivingLicenseList: [],
    },
@@ -215,7 +225,9 @@ vehicles.value = [
 const formData = reactive<IVehicleApprovalForm>({
   companyName: "",
   busiLicence: "",
+  businessLicenseImg: '',
   legalPersonIdno: "",
+  legalPersonName: "",
   contactPhone: "",
   startTime: "",
   endTime: "",
@@ -232,8 +244,9 @@ const submitFormData = ref<StartProcessBo>({
 // 表单验证规则
 const rules = reactive({
   companyName: [{ required: true, message: "请输入公司名称", trigger: "blur" }],
+  legalPersonName: [{ required: true, message: "请输入公司名称", trigger: "blur" }],
   busiLicence: [{ required: true, message: "请输入营业执照号", trigger: "blur" }],
-  legalPersonIdno_1: [
+  legalPersonIdno: [
     { required: true, message: "请输入法人身份证号码", trigger: "blur" },
     {
       pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/,
@@ -265,7 +278,7 @@ const rules = reactive({
 const addVehicle = () => {
   vehicles.value.push({
     province: "京",
-    plateNumber: "",
+    plateNumber: "京",
     drivingLicenseImg: "",
     drivingLicenseList: [],
   })
@@ -276,12 +289,47 @@ const removeVehicle = (index: number) => {
   vehicles.value.splice(index, 1)
 }
 
+const customUpload: UploadMethod = (file, formData, options) => {
+	console.log('custom-upload')
+	const uploadTask = uni.uploadFile({
+    url: uploadAction.value,
+    header: tempHeader,
+    name: options.name,
+    fileName: options.name,
+    fileType: options.fileType,
+    formData,
+    filePath: file.url,
+    success(res) {
+      if (res.statusCode === options.statusCode) {
+        // 设置上传成功
+        options.onSuccess(res, file, formData)
+      } else {
+        // 设置上传失败
+        options.onError({ ...res, errMsg: res.errMsg || '' }, file, formData)
+      }
+    },
+    fail(err) {
+      // 设置上传失败
+      options.onError(err, file, formData)
+    }
+  })
+  // 设置当前文件加载的百分比
+    uploadTask.onProgressUpdate((res) => {
+      options.onProgress(res, file)
+    })
+}
+
 // 上传成功回调
-const handleUploadSuccess = (file: any, fileList: any[], index?: number) => {
-  console.log("上传成功", file, fileList)
+const handleDrivingLicenseUploadSuccess = (file: any, index?: number) => {
+  console.log("上传成功", file, index)
   if (index !== undefined) {
     vehicles.value[index].drivingLicense = file.url
   }
+}
+
+// 上传成功回调
+const handleBusiLicenseUploadSuccess = (file: any) => {
+  console.log("上传成功", file)
 }
 
 // 附件上传成功回调
@@ -377,6 +425,11 @@ const submitForm = () => {
 			      }).then(() => {
 			        // uni.hideLoading()
 			        toast.success("提交成功")
+					
+					uni.redirectTo({
+						url: '/pages-sub/application-company/detail?id=' + app.data.applicationId
+					})
+					
 			      })
 			    })
 			    .catch((err: Error) => {
@@ -397,6 +450,9 @@ const submitForm = () => {
         })
     } else {
       console.log("表单验证失败", errors)
+	  if(errors && errors.length > 0) {
+		   toast.warning(errors[0].message)
+	  }
     }
   })
 }

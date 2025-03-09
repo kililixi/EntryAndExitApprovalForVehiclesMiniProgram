@@ -12,8 +12,10 @@ export interface IVehicleApprovalForm {
   companyName?: string
   /** 营业执照号 */
   busiLicence?: string
+  businessLicenseImg?: string
   /** 法人身份证号 */
   legalPersonIdno?: string
+  legalPersonName?: string
   /** 联系方式 */
   contactPhone: string
   /** 身份证正面照片 */

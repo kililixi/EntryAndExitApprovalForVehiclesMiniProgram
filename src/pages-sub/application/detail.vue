@@ -10,6 +10,7 @@
           </wd-button>
         </view>
       </wd-cell>
+      <wd-cell title="联系方式" :value="data.contactPhone" />
       <wd-cell title="进岛时间" :value="data.startTime"></wd-cell>
       <wd-cell title="离岛时间" :value="data.endTime"></wd-cell>
       <wd-cell title="审批进度" center>
@@ -24,7 +25,7 @@
         <wd-cell title="车牌号" :value="item.plateNumber" />
         <!-- driving_license_img -->
         <wd-cell title="车辆行驶证" center>
-          <wd-img :width="100" :height="100" src="https://www.123.com/a.jpg">
+          <wd-img :width="100" :height="100" :src="item.drivingLicenseImgUrl" :enable-preview="true">
             <template #error>
               <view class="error-wrap">加载失败</view>
             </template>
@@ -48,6 +49,7 @@
 import { onMounted, ref } from "vue"
 import { getInfo } from "@/api/application/index"
 import { listVehicle } from "@/api/vehicle/index"
+import { getOss } from "@/api/common/index"
 import { IIslandApplicationVo, VehicleVO, VehicleQuery } from "@/pages-sub/application/types"
 import { onLaunch, onShow, onHide } from "@dcloudio/uni-app"
 
@@ -109,8 +111,17 @@ const initData = async () => {
   data.value = application.data
   vehicleQuery.applicationId = props.id
   const result = await listVehicle(vehicleQuery)
+  // 处理车辆行驶证图片
+  for (const vehicle of result.rows) {
+    if (vehicle.drivingLicenseImg) {
+      const {data} = await getOss(vehicle.drivingLicenseImg)
+	  if(data && data.length > 0) {
+		   vehicle.drivingLicenseImgUrl = data[0].url
+	  }
+    }
+  }
   vehicleList.value = result.rows
-  console.log("vvv", vehicleList.value)
+  console.log("result", result)
 }
 
 onMounted(async () => {

@@ -1,7 +1,8 @@
 <template>
     <wd-table height="100vh" :data="data" :fixed-header="false" :ellipsis="false" >
-      <wd-table-col prop="plateNumber" :width="120" label="车牌号" align="center"></wd-table-col>
-	  <wd-table-col prop="status" label="状态" align="center">
+      <wd-table-col v-if="userStore.userType === 'tourist'" prop="plateNumber" :width="120" label="车牌号" align="center"></wd-table-col>
+	  <wd-table-col v-else-if="userStore.userType === 'legal_person'" prop="companyName" :width="120" label="公司名称" align="center"></wd-table-col>
+	  <wd-table-col prop="status" label="审核状态" align="center">
 		  <template #value="{row}">
 			<view class="custom-class">
 			  <wd-tag custom-class="space" :type="getStatusType(row.status)">
@@ -34,6 +35,9 @@ import dayjs from 'dayjs'
 import { getListByLogin } from '@/api/application/index'
 import { IIslandApplicationVo } from "@/pages-sub/application/types"
 import { onLaunch, onShow, onHide } from "@dcloudio/uni-app"
+import { useUserStore } from "@/store/user"
+
+const userStore = useUserStore()
 
 const page = ref<number>(1)
 const pageSize = ref<number>(10)
@@ -68,9 +72,16 @@ const getStatusText = (status: string) => {
 }
 
 const toDetail = (applicatioId: string) => {
-	uni.navigateTo({
-		url: '/pages-sub/application/detail?id=' + applicatioId
-	})
+	
+	if( userStore.userType === "tourist" ) {
+		  uni.navigateTo({
+		  	url: '/pages-sub/application/detail?id=' + applicatioId
+		  })
+	} else if(userStore.userType === "legal_person") {
+		  uni.navigateTo({
+		  	url: '/pages-sub/application-company/detail?id=' + applicatioId
+		  })
+	}
 }
 
 const getList = async () => {

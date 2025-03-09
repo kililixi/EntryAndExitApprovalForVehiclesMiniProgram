@@ -1,15 +1,28 @@
 <template>
   <view class="page-container">
     <wd-cell-group title="基本信息" border>
-      <wd-cell title="姓名" :value="data.individualName" />
-      <wd-cell title="身份证号" center>
-        <view class="flex items-center">
-          <text>{{ getMaskedIdno(data.individualIdno) }}</text>
-          <wd-button size="small" custom-style="margin-left: 10px" @click="toggleIdnoMask">
-            {{ idnoMasked ? "显示" : "隐藏" }}
-          </wd-button>
-        </view>
-      </wd-cell>
+      <wd-cell title="公司名称" :value="data.companyName" />
+      <wd-cell title="营业执照号" :value="data.busiLicence" />
+	  <wd-cell title="营业执照照片" center>
+	    <wd-img :width="100" :height="100" src="https://www.123.com/a.jpg">
+	      <template #error>
+	        <view class="error-wrap">加载失败</view>
+	      </template>
+	      <template #loading>
+	        <view class="loading-wrap">
+	          <wd-loading />
+	        </view>
+	      </template>
+	    </wd-img>
+	  </wd-cell>
+	  <wd-cell title="法人姓名" :value="data.legalPersonName" />
+	  <wd-cell title="法人身份证号码" >
+		  <text>{{ getMaskedIdno(data.legalPersonIdno) }}</text>
+		  <wd-button size="small" custom-style="margin-left: 10px" @click="toggleIdnoMask">
+		    {{ idnoMasked ? "显示" : "隐藏" }}
+			</wd-button>
+		</wd-cell>
+	  <wd-cell title="联系方式" :value="data.contactPhone" />
       <wd-cell title="进岛时间" :value="data.startTime"></wd-cell>
       <wd-cell title="离岛时间" :value="data.endTime"></wd-cell>
       <wd-cell title="审批进度" center>

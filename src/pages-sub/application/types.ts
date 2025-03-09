@@ -23,7 +23,7 @@ export interface IVehicleApprovalForm {
   /** 车牌号 */
   plateNumber: string
   /** 行驶证照片 */
-  drivingLicense: ''
+  drivingLicenseImg: ''
   /** 进岛时间 */
   startTime: string
   /** 离岛时间 */
@@ -126,6 +126,7 @@ export interface IIslandApplicationVo {
   busiLicence?: string
   /** 申请时的法人身份证号 */
   legalPersonIdno?: string
+  legalPersonName?: string
   /** 申请人姓名 */
   individualName?: string
   /** 申请人身份证号 */
@@ -177,6 +178,10 @@ export interface VehicleVO {
    * 车辆照片路径
    */
   vehicleImg: string;
+  
+  drivingLicenseImg: string;
+  
+  drivingLicenseImgUrl: string;
 }
 
 

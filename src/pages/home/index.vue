@@ -29,22 +29,28 @@
     <view class="feature-grid">
       <view class="feature-item" @click="toAddApplication">
         <view class="feature-icon health-file">
-          <wd-icon name="document" size="24" color="#4080FF"></wd-icon>
+		  <wd-icon name="add" size="22px" color="#4080FF"></wd-icon>
         </view>
         <text class="feature-text">新增申请</text>
       </view>
       <view class="feature-item" @click="switchToMyApplication">
         <view class="feature-icon health-file">
-          <wd-icon name="document" size="24" color="#4080FF"></wd-icon>
+           <wd-icon name="list" size="22px" color="#4080FF"></wd-icon>
         </view>
         <text class="feature-text">我的申请</text>
       </view>
       <view class="feature-item">
         <view class="feature-icon medicine">
-          <wd-icon name="medical-kit" size="24" color="#4080FF"></wd-icon>
+           <wd-icon name="user-circle" size="22px" color="#4080FF"></wd-icon>
         </view>
         <text class="feature-text">我的信息</text>
       </view>
+	  <view class="feature-item">
+	    <view class="feature-icon medicine">
+	       <wd-icon name="setting" size="22px" color="#4080FF"></wd-icon>
+	    </view>
+	    <text class="feature-text">设置</text>
+	  </view>
     </view>
 
     <!-- 功能列表 -->
@@ -77,6 +83,7 @@
 <script lang="ts" setup>
 import { useUserStore } from "@/store/user"
 import { onMounted } from "vue"
+import { onLaunch, onShow, onHide } from "@dcloudio/uni-app"
 
 const userStore = useUserStore()
 
@@ -129,9 +136,13 @@ const handleLogout = () => {
 }
 
 onMounted(async () => {
-  const data = await userStore.getInfo()
-  console.log("user", data)
+  // const data = await userStore.getInfo()
+  // console.log("user", data)
 })
+
+onShow( ()=> {
+	userStore.getInfo()
+} )
 </script>
 
 <style lang="scss" scoped>

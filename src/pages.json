@@ -30,7 +30,7 @@
         "iconPath": "static/tabbar/home.png",
         "selectedIconPath": "static/tabbar/home-select.png",
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "text": "申请"
       },
       {
         "iconPath": "static/tabbar/user.png",
@@ -45,7 +45,7 @@
       "path": "pages/index/index",
       "type": "home",
       "style": {
-        "navigationBarTitleText": "首页",
+        "navigationBarTitleText": "申请",
         "navigationStyle": "default"
       },
       "needLogin": false
@@ -116,7 +116,31 @@
             "navigationBarTitleText": "订单详情",
             "navigationStyle": "default"
           }
-        }
+        },
+		{
+		  "path": "application/index",
+		  "type": "page",
+		  "style": {
+		    "navigationBarTitleText": "新增申请",
+		    "navigationStyle": "default"
+		  }
+		},
+		{
+		  "path": "application-company/index",
+		  "type": "page",
+		  "style": {
+		    "navigationBarTitleText": "新增申请",
+		    "navigationStyle": "default"
+		  }
+		},
+		{
+		  "path": "application/detail",
+		  "type": "page",
+		  "style": {
+		    "navigationBarTitleText": "申请详情",
+		    "navigationStyle": "default"
+		  }
+		}
       ]
     }
   ]

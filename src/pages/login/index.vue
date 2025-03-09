@@ -69,7 +69,7 @@ const handleLogin = async () => {
 		
 	} else {
 		uni.showToast({
-			title: '登陆失败',
+			title: err.message,
 			icon: 'none'
 		});
 	}

@@ -1,51 +1,104 @@
 <template>
-  <view>
-    <view v-for="(layout, index) in body.bodyList" :key="index">
-      <up-swiper
-        :list="swiperList"
-        indicator
-        indicatorMode="dot"
-        v-if="layout.type === 'banner'"
-      ></up-swiper>
-		<wd-text
-		  text="芦叶满汀洲，寒沙带浅流。二十年重过南楼。柳下系船犹未稳，能几日，又中秋。黄鹤断矶头，故人曾到否？旧江山浑是新愁。欲买桂花同载酒，终不似，少年游。"
-		></wd-text>
-		<wd-text type="primary" text="主色"></wd-text>
-		<wd-text type="error" text="错误"></wd-text>
-		<wd-text type="success" text="成功"></wd-text>
-		<wd-text type="warning" text="警告"></wd-text>
-		<wd-text text="默认"></wd-text>
-      <view class="mt-4" v-if="layout.type === 'card'">{{ layout.title }}</view>
-    </view>
-  </view>
+    <wd-table height="100vh" :data="data" :fixed-header="false" :ellipsis="false" >
+      <wd-table-col prop="plateNumber" :width="120" label="车牌号" align="center"></wd-table-col>
+	  <wd-table-col prop="status" label="状态" align="center">
+		  <template #value="{row}">
+			<view class="custom-class">
+			  <wd-tag custom-class="space" :type="getStatusType(row.status)">
+				{{ getStatusText(row.status) }}
+			  </wd-tag>
+			  </view>
+		  </template>
+	  </wd-table-col>
+	  <wd-table-col prop="startTime" label="时间" align="center">
+	  <template #value="{row}">
+	    <view class="custom-class">
+	      {{ dayjs(row.startTime).format('YYYYMMDD') }}-{{ dayjs(row.endTime).format('YYYYMMDD') }}
+	    </view>
+	  </template>
+	  </wd-table-col>
+	  <wd-table-col prop="applicationId" label="操作" fixed align="center">
+		<template #value="{row}">
+		  <view class="custom-class">
+			<wd-button size="small" @click="toDetail(row.applicationId)">详细</wd-button>
+		  </view>
+		</template>
+	  </wd-table-col>
+    </wd-table>
+    <wd-pagination custom-style="border: 1px solid #ececec;border-top:none" v-model="page" :total="total" @change="handleChange"></wd-pagination>
 </template>
 
-<script lang="ts" setup>
-import { reactive } from "vue"
-import pageConfig from "@/config/style.config"
-const { body } = pageConfig.layoutEnum?.indexPage || {}
-const swiperList = reactive([
-  "https://cdn.uviewui.com/uview/swiper/swiper1.png",
-  "https://cdn.uviewui.com/uview/swiper/swiper2.png",
-  "https://cdn.uviewui.com/uview/swiper/swiper3.png",
-])
-const scrollList = reactive([
-  {
-    thumb: "https://cdn.uviewui.com/uview/goods/1.jpg",
-  },
-  {
-    thumb: "https://cdn.uviewui.com/uview/goods/2.jpg",
-  },
-  {
-    thumb: "https://cdn.uviewui.com/uview/goods/3.jpg",
-  },
-  {
-    thumb: "https://cdn.uviewui.com/uview/goods/4.jpg",
-  },
-  {
-    thumb: "https://cdn.uviewui.com/uview/goods/5.jpg",
-  },
-])
+<script setup lang="ts">
+import { ref } from "vue"
+import dayjs from 'dayjs'
+import { getListByLogin } from '@/api/application/index'
+import { IIslandApplicationVo } from "@/pages-sub/application/types"
+import { onLaunch, onShow, onHide } from "@dcloudio/uni-app"
+
+const page = ref<number>(1)
+const pageSize = ref<number>(10)
+const total = ref<number>(0)
+
+const data = ref<IIslandApplicationVo[]>([])
+
+const getStatusType = (status: string): "success" | "warning" | "primary" | "danger" => {
+  const statusMap: Record<string, "success" | "warning" | "primary" | "danger"> = {
+    draft: "warning",
+    waiting: "primary",
+    finish: "success",
+    invalid: "danger",
+    back: "danger",
+    termination: "danger",
+    cancel: "danger",
+  }
+  return statusMap[status] || "primary"
+}
+
+const getStatusText = (status: string) => {
+  const statusMap: Record<string, string> = {
+    cancel: "已撤销",
+    draft: "草稿",
+    waiting: "审核中",
+    finish: "已完成",
+    invalid: "已作废",
+    back: "已退回",
+    termination: "已终止",
+  }
+  return statusMap[status] || "未知状态"
+}
+
+const toDetail = (applicatioId: string) => {
+	uni.navigateTo({
+		url: '/pages-sub/application/detail?id=' + applicatioId
+	})
+}
+
+const getList = async () => {
+	const result = await getListByLogin({
+		pageNum: page.value,
+		pageSize: pageSize.value
+	})
+	total.value = result.total
+	data.value = result.rows
+}
+
+onMounted( async ()=> {
+	console.log('onMounted')
+	getList()
+})
+
+onShow(()=>{
+	console.log('onShow')
+	getList()
+})
+
+// const total = ref<number>(dataList.value.length)
+
+const handleChange = ({value}) => {
+	console.log('value', value)
+	page.value = value
+	getList()
+}
 </script>
 
-<style lang="scss" scoped></style>
+<style scoped lang="scss"></style>

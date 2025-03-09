@@ -4,7 +4,7 @@ import { ref } from "vue"
 import { loginByWechatApi, login as loginApi, getInfo as getUserInfo } from "@/api/login"
 import { LoginData } from "@/pages/login/types"
 const initState = {}
-import defAva from '@/assets/images/profile.jpg';
+// import defAva from '@/assets/images/profile.jpg';
 // const defAva = import.meta.glob(`../../assets/image/workbench/*.png`, { eager: true })
 import { getToken, removeToken, setToken } from '@/utils/auth';
 
@@ -22,9 +22,11 @@ export const useUserStore = defineStore(
   const userId = ref<string | number>('');
   const unitName = ref<string>('');
   const deptName = ref<string>('');
+  const userType = ref<string>('tourist');
   const avatar = ref('');
   const roles = ref<Array<string>>([]); // 用户角色编码集合 → 判断路由权限
   const permissions = ref<Array<string>>([]); // 用户权限编码集合 → 判断按钮权限
+  
 	
     const setUserInfo = (val: IUserInfo) => {
       userInfo.value = val
@@ -50,7 +52,7 @@ export const useUserStore = defineStore(
               loginCode: res.code,
               telephoneCode: phoneCode,
             })
-            if (loginRes.success) {
+            if (loginRes.code === 200) {
               resolve(loginRes)
             } else {
               reject(loginRes)
@@ -88,7 +90,7 @@ export const useUserStore = defineStore(
 	    if (res) {
 	      const data = res.data;
 	      const user = data.user;
-	      const profile = user.avatar == '' || user.avatar == null ? defAva : user.avatar;
+	      const profile = user.avatar === '' || user.avatar === null ? '' : user.avatar;
 	
 	      if (data.roles && data.roles.length > 0) {
 	        // 验证返回的roles是否是一个非空数组
@@ -105,6 +107,7 @@ export const useUserStore = defineStore(
 	      deptId.value = user.deptId;
 	      unitName.value = user.unitName
 	      deptName.value = user.deptName;
+		  userType.value = user.userType
 	      return Promise.resolve();
 	    }
 	    return Promise.reject(err);
@@ -120,7 +123,19 @@ export const useUserStore = defineStore(
       appid,
       loginByWechat,
 	  login,
-	  getInfo
+	  getInfo,
+      // 返回用户基本信息，供页面使用
+      name,
+      nickname,
+      avatar,
+      userId,
+      unitId,
+      deptId,
+      unitName,
+      deptName,
+      roles,
+      permissions,
+	  userType
     }
   },
   {

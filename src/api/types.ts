@@ -29,3 +29,14 @@ export interface IMiniWxLoginRes {
   /* */
   userId: number
 }
+
+export interface StartProcessBo {
+  businessId: string | number;
+  flowCode: string;
+  variables: any;
+}
+
+export interface startWorkFlowResult {
+  processInstanceId: string;
+  taskId: string;
+}

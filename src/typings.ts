@@ -2,22 +2,17 @@
 
 type ApiResult<T> = {
   code: number
-  traceid: string
-  code: string
   msg: string
-  err: string
-  data: T
-  timestamp: number
+  data: T,
+  total: number
+  rows: T[]
 }
 
 type ApiPageResult<T> = {
-  list: T[]
-  pageNo: number
-  pageSize: number
+  rows: T[]
   total: number
-  totalPages: number
-  totalAmount?: number
-  totalOrderCount?: number
+  code: number
+  msg: string
 }
 
 type IUniUploadFileOptions = {

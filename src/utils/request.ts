@@ -4,22 +4,15 @@ import { encrypt } from '@/utils/encrypt'
 import { useUserStore } from "@/store"
 import { getToken } from '@/utils/auth';
 
-// 可以根据不同环境配置不同的baseUrl
-const PREFIX = "/dev-api";
 // const encryptHeader = 'encrypt-key';
+const clientId = "e5cd7e4891bf95d1d19206ce24a7b32e"
 
-// 处理url，拼接baseUrl
-const getFullUrl = (url: string): string => {
-  // 如果url已经是完整的http或https开头的地址，则直接返回
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
-  }
-  // 确保url和PREFIX之间只有一个斜杠
-  if (url.startsWith('/')) {
-    url = url.substring(1);
-  }
-  return `${PREFIX}/${url}`;
-}
+export const globalHeaders = () => {
+  return {
+    Authorization: 'Bearer ' + getToken(),
+    clientid: clientId
+  };
+};
 
 export const request = async <T>(options: CustomRequestOptions): Promise<ApiResult<T>> => {
   const userStore = useUserStore()
@@ -38,13 +31,12 @@ export const request = async <T>(options: CustomRequestOptions): Promise<ApiResu
 	
 	if (getToken() && !isToken) {
 	      options.header = {
-			  'Authorization': 'Bearer ' + getToken()
+			  'Authorization': 'Bearer ' + getToken(),
+			  'clientId': clientId
 		  }
 	}
 	
 	if(options.encrypt) {
-		
-		// 生成一个 AES 密钥
 		const aesKey = generateAesKey();
 		options.header = {
 			'encrypt-key': encrypt(encryptBase64(aesKey))
@@ -62,19 +54,23 @@ export const request = async <T>(options: CustomRequestOptions): Promise<ApiResu
 
     const { statusCode, data } = res
     const result = data as ApiResult<T>
-	console.log('result111', result)
     if (statusCode >= 200 && statusCode < 300) {
-		
+	console.log(result)
       if (result.code === 200) {
         return result
-      } else {
+      } else if (result.code === 500) { 
+		return Promise.reject(new Error(result.msg));
+	  } else if (result.code === 401) {
+		  handleAuthFailure()
+	  }
+	  else {
         uni.showToast({
           icon: "none",
           title: result.msg || "请求错误",
           duration: 5000,
         })
 
-        const authFailureCodes = ["202", "203", "xxx"]
+        const authFailureCodes = [202, 203]
         if (authFailureCodes.includes(result.code)) {
           handleAuthFailure()
           setTimeout(() => {

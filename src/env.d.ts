@@ -23,7 +23,7 @@ interface ImportMetaEnv {
   readonly VITE_UPLOAD_BASEURL: string
   /** 是否清除console */
   readonly VITE_DELETE_CONSOLE: string
-  // 更多环境变量...
+  readonly VITE_APP_BASE_API: string
 }
 
 interface ImportMeta {

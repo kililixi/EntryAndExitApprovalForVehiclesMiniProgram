@@ -14,3 +14,11 @@ declare const __UNI_PLATFORM__:
   | 'quickapp-webview-union'
 
 declare const __VITE_APP_PROXY__: 'true' | 'false'
+
+  /**
+   * 分页查询参数
+   */
+declare interface PageQuery {
+	pageNum: number;
+	pageSize: number;
+}
